@@ -19,6 +19,7 @@ db = client[DB_NAME]
 
 # Initialize Flask app
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
 @app.template_filter('get_nama_tarif')
 def get_nama_tarif(value):
