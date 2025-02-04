@@ -1,0 +1,415 @@
+{% extends "main.html" %} 
+
+{% block title %}
+Tarif
+{% endblock %}
+{% block content %}
+
+<script>
+  function tambah() {
+    let nama = $("#nama").val();
+    let nomor = $("#nomor").val();
+    let alamat = $("#alamat").val();
+    let tarif = $("#tarif").val();
+
+    if (!nama || !nomor || !alamat || !tarif) {
+      $("#modalMessageW").text(
+        "Data yang Anda masukkan belum lengkap. Harap isi semua bidang yang diperlukan."
+      );
+      $("#warningModal").modal("show");
+      return;
+    }
+  
+    let formData = new FormData();
+    formData.append("halaman", "pelanggan");
+    formData.append("nama", nama);
+    formData.append("nomor", nomor);
+    formData.append("alamat", alamat);
+    formData.append("tarif", tarif);
+
+    $.ajax({
+      type: "POST",
+      url: "/tambah",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        if (response.status === "success") {
+          $("#modalMessage").text(response.msg);
+          $("#successModal").modal("show");
+          $("#successModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        } else if (response.status === "error") {
+          $("#modalMessageE").text(response.msg);
+          $("#errorModal").modal("show");
+          $("#errorModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        } else {
+          $("#modalMessageW").text(response.msg);
+          $("#warningModal").modal("show");
+          $("#warningModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        }
+      },
+      error: function (xhr, status, error) {
+        let errorMessage = xhr.responseJSON
+          ? xhr.responseJSON.msg
+          : "Terjadi kesalahan";
+        $("#modalMessageE").text(errorMessage);
+        $("#errorModal").modal("show");
+      },
+    });
+  }
+
+  function edit(id) {
+    let nama = $("#nama"+ id).val();
+    let nomor = $("#nomor"+ id).val();
+    let alamat = $("#alamat"+ id).val();
+    let tarif = $("#tarif"+ id).val();
+  
+    let formData = new FormData();
+    formData.append("halaman", "pelanggan");
+    formData.append("id", id);
+    formData.append("nama", nama);
+    formData.append("nomor", nomor);
+    formData.append("alamat", alamat);
+    formData.append("tarif", tarif);
+
+    $.ajax({
+      type: "POST",
+      url: "/Edit",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        if (response.status === "success") {
+          $("#modalMessage").text(response.msg);
+          $("#successModal").modal("show");
+          $("#successModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        } else if (response.status === "error") {
+          $("#modalMessageE").text(response.msg);
+          $("#errorModal").modal("show");
+        } else {
+          $("#modalMessageW").text(response.msg);
+          $("#warningModal").modal("show");
+        }
+      },
+      error: function (xhr, status, error) {
+        let errorMessage = xhr.responseJSON
+          ? xhr.responseJSON.msg
+          : "Terjadi kesalahan";
+        $("#modalMessageE").text(errorMessage);
+        $("#errorModal").modal("show");
+      },
+    });
+  }
+
+
+  function hapus(id) {
+    console.log("deleting", id);
+    $.ajax({
+      type: "POST",
+      url: "/hapus",
+      data: {
+        id: id,
+        halaman: "pelanggan"
+      },
+      success: function (response) {
+        if (response.status === "success") {
+          $("#modalMessage").text(response.msg);
+          $("#successModal").modal("show");
+          $("#successModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        } else if (response.status === "error") {
+          $("#modalMessageE").text(response.msg);
+          $("#errorModal").modal("show");
+          $("#errorModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        } else {
+          $("#modalMessageW").text(response.msg);
+          $("#warningModal").modal("show");
+          $("#warningModal").on("hidden.bs.modal", function () {
+            window.location.reload();
+          });
+        }
+      },
+      error: function (xhr, status, error) {
+        let errorMessage = xhr.responseJSON
+          ? xhr.responseJSON.msg
+          : "Terjadi kesalahan";
+        $("#modalMessageE").text(errorMessage);
+        $("#errorModal").modal("show");
+      },
+    });
+  }
+</script>
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0 text-gray-800">Pelanggan</h1>
+</div>
+
+<!-- Content Row -->
+
+<div class="row">
+  <!-- Profile -->
+  <div class="col-12 card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row justify-content-between">
+        <div class="col-6">
+          <a
+            href=""
+            class="btn btn-primary"
+            data-toggle="modal"
+            data-target="#tamabahModal"><i class="fas fa-plus-circle"></i> Tambah</a
+          >
+        </div>
+      </div>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+      {% if data_count > 0 %}
+      <div class="table-responsive">
+        <table
+          class="table table-bordered"
+          id="dataTable"
+          width="100%"
+          cellspacing="0">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>No. HP</th>
+              <th>Alamat</th>
+              <th>Tarif</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dt in data %}
+            <tr>
+              <td>{{ dt.nama }}</td>
+              <td>{{ dt.nomor }}</td>
+              <td>{{ dt.alamat }}</td>
+              <td>{{ dt.tarif | get_nama_tarif }}</td>
+              <td>
+                <a
+                  href="#"
+                  class="btn btn-warning mb-1"
+                  title="Edit"
+                  data-toggle="modal"
+                  data-target="#editModal{{ dt._id }}"
+                  ><i class="fas fa-fw fa-pen"></i> Edit</a
+                >
+                <a
+                  href="#"
+                  class="btn btn-danger mb-1"
+                  title="Edit"
+                  data-toggle="modal"
+                  data-target="#hapusPromoModal{{ dt._id }}"
+                  ><i class="fas fa-fw fa-trash"></i> Hapus</a
+                >
+              </td>
+            </tr>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="editModal{{ dt._id }}"
+              tabindex="-1"
+              aria-labelledby="responseModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="fw-bold">Edit Pelanggan</h5>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="nama" class="form-label">nama</label>
+                      <input
+                        type="text"
+                        class="form-control form-control-user"
+                        name="nama"
+                        id="nama{{ dt._id }}"
+                        placeholder="Riksa Munggaran"
+                        value="{{ dt.nama }}"
+                        required />
+                    </div>
+                    <div class="form-group">
+                      <label for="nomor" class="form-label">nomor</label>
+                      <input
+                        type="number"
+                        class="form-control form-control-user"
+                        name="nomor"
+                        id="nomor{{ dt._id }}"
+                        placeholder="08927382783"
+                        value="{{ dt.nomor }}"
+                        required />
+                    </div>
+                    <div class="form-group">
+                      <label for="alamat" class="form-label">alamat</label>
+                      <input
+                        type="text"
+                        class="form-control form-control-user"
+                        name="alamat"
+                        id="alamat{{ dt._id }}"
+                        placeholder="jl.Patimura No.033"
+                        value="{{ dt.alamat }}"
+                        required />
+                    </div>
+                    <div class="form-group">
+                        <label for="tarif" class="form-label">tarif</label>
+                        <select class="custom-select" id="tarif{{ dt._id }}">
+                            <option>Pilih tarif</option>
+                            {% for tf in tarif %}
+                            <option value="{{ tf._id }}" {% if tf._id and dt.tarif %}selected{% endif %}>{{ tf.nama }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      onclick="edit('{{ dt._id }}')"
+                      data-dismiss="modal">
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal">
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="hapusPromoModal{{ dt._id }}"
+              tabindex="-1"
+              aria-labelledby="responseModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-body row">
+                    <div class="col-12 d-flex justify-content-center">
+                      <dotlottie-player
+                        src="https://lottie.host/d280ef46-6a47-403b-b396-807cf4579b95/fEmrI0fi9R.json"
+                        background="transparent"
+                        speed="1"
+                        style="width: 200px; height: 200px"
+                        direction="1"
+                        playMode="normal"
+                        loop
+                        autoplay></dotlottie-player>
+                    </div>
+                    <div class="col text-center">
+                      <p id="modalMessageE">
+                        Apakah anda yakin ingin hapus data {{ dt.nama }} ini?
+                      </p>
+                      <button
+                        type="submit"
+                        class="btn btn-danger"
+                        onclick="hapus('{{ dt._id }}')"
+                        data-dismiss="modal">
+                        Hapus
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <h4>Belum Ada data</h4>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="tamabahModal"
+  tabindex="-1"
+  aria-labelledby="responseModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="fw-bold">Tambah Pelanggan</h5>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="nama" class="form-label">nama</label>
+          <input
+            type="text"
+            class="form-control form-control-user"
+            name="nama"
+            id="nama"
+            placeholder="Riksa Munggaran"
+            required />
+        </div>
+        <div class="form-group">
+          <label for="nomor" class="form-label">nomor</label>
+          <input
+            type="number"
+            class="form-control form-control-user"
+            name="nomor"
+            id="nomor"
+            placeholder="08927382783"
+            required />
+        </div>
+        <div class="form-group">
+          <label for="alamat" class="form-label">alamat</label>
+          <input
+            type="text"
+            class="form-control form-control-user"
+            name="alamat"
+            id="alamat"
+            placeholder="jl.Patimura No.033"
+            required />
+        </div>
+        <div class="form-group">
+            <label for="tarif" class="form-label">tarif</label>
+            <select class="custom-select" id="tarif">
+              <option selected>Pilih tarif</option>
+              {% for tr in tarif %}
+              <option value="{{ tr._id }}">{{ tr.nama }}</option>
+              {% endfor %}
+          </select>
+        </div>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          onclick="tambah()"
+          data-dismiss="modal">
+          Tambah
+        </button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "main.html" %}
+{% block title %}Dashboard{% endblock %} 
+{% block content %}
+
+<script>
+    function editprofile(id) {
+        let name = $("#name").val(); 
+
+        let formData = new FormData();
+
+        formData.append('id', id);
+        formData.append('username', name);
+
+        $.ajax({
+            type: "POST",
+            url: "/editprofile",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.status === "success") {
+                    $('#modalMessage').text(response.msg);
+                    $("#successModal").modal("show");
+                    $('#successModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                } else if (response.status === "error") {
+                    $('#modalMessageE').text(response.msg);
+                    $("#errorModal").modal("show");
+                    $('#errorModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                } else  {
+                    $('#modalMessageW').text(response.msg);
+                    $("#warningModal").modal("show");
+                    $('#warningModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                let errorMessage = xhr.responseJSON ? xhr.responseJSON.msg : 'Terjadi kesalahan';
+                $('#modalMessageE').text(errorMessage);
+                $("#errorModal").modal("show");
+            }
+        });
+    }
+
+    function change_password(id){
+        let current_password = $("#current_password").val();
+        let new_password = $("#new_password").val();
+        let new_password_confirmation = $("#new_password_confirmation").val();
+
+        $.ajax({
+            type: "POST",
+            url: "/change_password",
+            data: {
+                id:id,
+                current_password:current_password,
+                new_password:new_password,
+                new_password_confirmation:new_password_confirmation
+            },
+            success: function (response) {
+                if (response.status === "success") {
+                    $('#modalMessage').text(response.msg);
+                    $("#successModal").modal("show");
+                    $('#successModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                } else if (response.status === "error") {
+                    $('#modalMessageE').text(response.msg);
+                    $("#errorModal").modal("show");
+                    $('#errorModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                } else  {
+                    $('#modalMessageW').text(response.msg);
+                    $("#warningModal").modal("show");
+                    $('#warningModal').on('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = xhr.responseJSON ? xhr.responseJSON.msg : 'Terjadi kesalahan';
+                $('#modalMessageE').text(errorMessage);
+                $("#errorModal").modal("show");
+            }
+        });
+    }
+</script>
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+</div>
+
+<!-- Content Row -->
+<div class="row">
+
+    <!-- Profile -->
+<div class="col-xl-8 col-lg-6">
+    <div class="card shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Profile</h6>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 ">
+                        <div class="form-group">
+                            <input type="text" class="form-control form-control-user" name="name" id="name"
+                                placeholder="Ujang jamaludin" value="{{ user.username }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" onclick="editprofile('{{ user._id }}')" >
+                            Edit
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ganti password -->
+<div class="col-xl-4 col-lg-6">
+    <div class="card shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Ganti Password</h6>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+            <div class="form-group">
+                <input type="password" class="form-control " id="current_password"
+                    name="current_password" placeholder="Masukan password lama" required>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control " id="new_password" name="new_password"
+                    placeholder="Masukan password baru" required>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control " id="new_password_confirmation"
+                    name="new_password_confirmation" placeholder="Konfirmasi password baru" required>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="change_password('{{ user._id }}')">Ganti password</button>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock %}
